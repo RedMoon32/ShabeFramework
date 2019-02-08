@@ -1,2 +1,2 @@
 # SHABE
-Shabe is a new modern http-server-framework written for C++
+Shabe is a new http-web-framework written fully in C
