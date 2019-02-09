@@ -1,12 +1,21 @@
-struct Request{
+#define MAX_REQUEST_LENGTH 1000
 
-};
+#ifndef STRUCTURES
+#define STRUCTURES
+
+typedef struct {
+	char request[1000];
+	int clientfd;
+	int id;	
+} Request;
 
 
-struct HttpRequest{
+typedef struct{
 
-};
+} HttpRequest;
 
-struct HttpResponse{
+typedef struct{
 
-};
+} HttpResonse;
+
+#endif

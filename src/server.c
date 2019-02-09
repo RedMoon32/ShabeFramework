@@ -4,9 +4,13 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include "HttpStructures.h"
 #include "server.h"
 
+
+#define TESTING
 #define PORT 8080
+#define MAX_REQUESTS 1000
 
 int init(struct sockaddr_in* address){
 
@@ -31,12 +35,25 @@ int init(struct sockaddr_in* address){
         perror("In bind");
         exit(EXIT_FAILURE);
     }
+
     if (listen(server_fd, 10) < 0)
     {
         perror("In listen");
         exit(EXIT_FAILURE);
     }
+
     return server_fd;
+}
+
+void append_to_requests(char *buffer,int new_socket,Request **reqs){
+    for (int i=0;i<MAX_REQUESTS;i++){
+            if (reqs[i] == NULL){
+                reqs[i] = (Request*) malloc(sizeof(Request));
+                reqs[i]->clientfd = new_socket;
+                memcpy(reqs[i]->request,buffer,MAX_REQUEST_LENGTH);
+                break;
+            }
+        }
 }
 
 void server_listen(int server_fd,struct sockaddr *address){
@@ -44,7 +61,7 @@ void server_listen(int server_fd,struct sockaddr *address){
      int new_socket;
      long valread;
      char *hello = "Hello from server";
-        
+     Request* reqs[MAX_REQUESTS];
      while(1)
      {
         printf("\n+++++++ Waiting for new connection ++++++++\n\n");
@@ -53,15 +70,18 @@ void server_listen(int server_fd,struct sockaddr *address){
             perror("In accept");
             exit(EXIT_FAILURE);
         }
-        
+
         char buffer[30000] = {0};
         valread = read( new_socket , buffer, 30000);
+        append_to_requests(buffer,new_socket,reqs);
         printf("%s\n",buffer );
         write(new_socket , hello , strlen(hello));
         printf("------------------Hello message sent-------------------\n");
         close(new_socket);
       }
 }
+
+#ifndef TESTING
 
 int main(int argc, char const *argv[])
 {
@@ -74,3 +94,5 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
+
+#endif
