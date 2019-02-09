@@ -6,7 +6,7 @@
 #include <string.h>
 #include "HttpStructures.h"
 #include "server.h"
-
+#include "Parser.h"
 
 #define TESTING
 #define PORT 8080
@@ -22,7 +22,6 @@ int init(struct sockaddr_in* address){
         exit(EXIT_FAILURE);
     }
     
-
     address->sin_family = AF_INET;
     address->sin_addr.s_addr = INADDR_ANY;
     address->sin_port = htons( PORT );
@@ -56,12 +55,16 @@ void append_to_requests(char *buffer,int new_socket,Request **reqs){
         }
 }
 
+void process_request(Request* req){
+    parse(req);
+}
+
 void server_listen(int server_fd,struct sockaddr *address){
      int addrlen = sizeof(address);
      int new_socket;
      long valread;
      char *hello = "Hello from server";
-     Request* reqs[MAX_REQUESTS];
+     Request* reqs[MAX_REQUESTS] = {NULL};
      while(1)
      {
         printf("\n+++++++ Waiting for new connection ++++++++\n\n");
@@ -76,7 +79,7 @@ void server_listen(int server_fd,struct sockaddr *address){
         append_to_requests(buffer,new_socket,reqs);
         printf("%s\n",buffer );
         write(new_socket , hello , strlen(hello));
-        printf("------------------Hello message sent-------------------\n");
+        printf("------------------Response message sent-------------------\n");
         close(new_socket);
       }
 }
