@@ -4,11 +4,15 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+
+#include "HttpStructures.h"
 #include "server.h"
+#include "Parser.h"
 
 #define PORT 8080
+#define MAX_REQUESTS 1000
 
-int init(struct sockaddr_in* address){
+int Socket(struct sockaddr_in* address){
 
     int server_fd;
 
@@ -18,10 +22,9 @@ int init(struct sockaddr_in* address){
         exit(EXIT_FAILURE);
     }
     
-
     address->sin_family = AF_INET;
     address->sin_addr.s_addr = INADDR_ANY;
-    address->sin_port = htons( PORT );
+    address->sin_port = htons(PORT);
     
     memset(address->sin_zero, '\0', sizeof address->sin_zero);
     
@@ -31,20 +34,37 @@ int init(struct sockaddr_in* address){
         perror("In bind");
         exit(EXIT_FAILURE);
     }
+
     if (listen(server_fd, 10) < 0)
     {
         perror("In listen");
         exit(EXIT_FAILURE);
     }
+
     return server_fd;
+}
+
+void append_to_requests(char *buffer,int new_socket,Request **reqs){
+    for (int i=0;i<MAX_REQUESTS;i++){
+            if (reqs[i] == NULL){
+                reqs[i] = (Request*) malloc(sizeof(Request));
+                reqs[i]->clientfd = new_socket;
+                memcpy(reqs[i]->request,buffer,strlen(buffer));
+                break;
+            }
+        }
+}
+
+void process_request(Request* req){
+    parse(req);
 }
 
 void server_listen(int server_fd,struct sockaddr *address){
      int addrlen = sizeof(address);
      int new_socket;
      long valread;
-     char *hello = "Hello from server";
-        
+     char *hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 28\n\n<h1>Hello fucking world</h1>";
+     Request* reqs[MAX_REQUESTS] = {NULL};
      while(1)
      {
         printf("\n+++++++ Waiting for new connection ++++++++\n\n");
@@ -53,15 +73,18 @@ void server_listen(int server_fd,struct sockaddr *address){
             perror("In accept");
             exit(EXIT_FAILURE);
         }
-        
+
         char buffer[30000] = {0};
         valread = read( new_socket , buffer, 30000);
+        append_to_requests(buffer,new_socket,reqs);
         printf("%s\n",buffer );
         write(new_socket , hello , strlen(hello));
-        printf("------------------Hello message sent-------------------\n");
+        printf("------------------Response message sent-------------------\n");
         close(new_socket);
       }
 }
+
+#ifndef TESTING
 
 int main(int argc, char const *argv[])
 {
@@ -69,8 +92,10 @@ int main(int argc, char const *argv[])
     struct sockaddr_in address;
     
     
-    server_fd = init(&address);
+    server_fd = Socket(&address);
     server_listen(server_fd,&address);
 
     return 0;
 }
+
+#endif
