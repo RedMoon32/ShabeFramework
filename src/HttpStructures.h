@@ -1,4 +1,4 @@
-#define MAX_REQUEST_LENGTH 1000
+#define MAX_REQUEST_LENGTH 1000	
 #define NUMBER_OF_METHODS 8
 
 #ifndef STRUCTURES
@@ -17,6 +17,9 @@ typedef struct {
 
 typedef struct{
 	enum Method method;
+	char *url;
+	//map (string,string) headers;
+	//map (string,?) values; 
 } HttpRequest;
 
 typedef struct{

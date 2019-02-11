@@ -12,7 +12,7 @@
 #define PORT 8080
 #define MAX_REQUESTS 1000
 
-int init(struct sockaddr_in* address){
+int Socket(struct sockaddr_in* address){
 
     int server_fd;
 
@@ -92,7 +92,7 @@ int main(int argc, char const *argv[])
     struct sockaddr_in address;
     
     
-    server_fd = init(&address);
+    server_fd = Socket(&address);
     server_listen(server_fd,&address);
 
     return 0;
