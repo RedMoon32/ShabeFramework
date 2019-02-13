@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+
 #include "HttpStructures.h"
 #include "server.h"
 #include "Parser.h"
 
-#define TESTING
 #define PORT 8080
 #define MAX_REQUESTS 1000
 
@@ -24,7 +24,7 @@ int Socket(struct sockaddr_in* address){
     
     address->sin_family = AF_INET;
     address->sin_addr.s_addr = INADDR_ANY;
-    address->sin_port = htons( PORT );
+    address->sin_port = htons(PORT);
     
     memset(address->sin_zero, '\0', sizeof address->sin_zero);
     
@@ -49,7 +49,7 @@ void append_to_requests(char *buffer,int new_socket,Request **reqs){
             if (reqs[i] == NULL){
                 reqs[i] = (Request*) malloc(sizeof(Request));
                 reqs[i]->clientfd = new_socket;
-                memcpy(reqs[i]->request,buffer,MAX_REQUEST_LENGTH);
+                memcpy(reqs[i]->request,buffer,strlen(buffer));
                 break;
             }
         }
@@ -63,7 +63,7 @@ void server_listen(int server_fd,struct sockaddr *address){
      int addrlen = sizeof(address);
      int new_socket;
      long valread;
-     char *hello = "Hello from server";
+     char *hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 28\n\n<h1>Hello fucking world</h1>";
      Request* reqs[MAX_REQUESTS] = {NULL};
      while(1)
      {

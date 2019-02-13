@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "libs/map.h"
 #include "HttpStructures.h"
 #include "Parser.h"
 
@@ -15,10 +16,6 @@ HttpRequest* parse(Request* req){
 
 	line = strtok(buffer,"\n");
 
-	if (line == NULL){
-		return NULL;
-	}
-	
 	char* lines[100] = {NULL};
 	int i = 0;
 
@@ -47,11 +44,27 @@ HttpRequest* parse(Request* req){
 	word = strtok(NULL," ");
 	ans_req->url =malloc(strlen(word));
 	memcpy(ans_req->url,word,strlen(word));
-		word = strtok(NULL," ");
-
+	word = strtok(NULL," ");
+	i = 1;
+	
 	if (strcasecmp(word,"HTTP/1.1")!=0){
 		return NULL;
+	}
+
+	map_void_t* headers = malloc(sizeof(map_void_t));
+	map_init(headers);
+	ans_req->headers = headers;
+
+	char *header,*value;
+
+	while (lines[i]!=NULL){
+		header = strtok(lines[i]," :");
+		value = strtok(NULL," ");
+		char *vbuffer = malloc(strlen(value));
+		memcpy(vbuffer,value,strlen(value));
+		map_set(headers,header,vbuffer);
+		i++;
 	}	
-	
+
 	return ans_req;
 }
