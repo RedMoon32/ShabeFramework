@@ -5,66 +5,106 @@
 #include "HttpStructures.h"
 #include "Parser.h"
 
+#define PARSE_OK 0
 
-HttpRequest* parse(Request* req){
-	
-	char *line;
-	char *delimiters = "\n";
-	char *buffer = malloc(strlen(req->request));
-	memcpy(buffer,req->request,strlen(req->request));
-	HttpRequest* ans_req = malloc(sizeof(HttpRequest));
+// Example of HttpRequest:
+//GET /favicon.ico HTTP/1.1
+//Host: 127.0.0.1:8080
+//Connection: keep-alive
+//User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36 OPR/60.0.3255.70
+//Accept: image/webp,image/apng,image/*,*/*;q=0.8
+//Referer: http://127.0.0.1:8080/
+//Accept-Encoding: gzip, deflate, br
+//Accept-Language: en-US,en;q=0.9
+//Cookie: csrftoken=hLrpfu90c6NBnEnjkb2FBYNIIzWJ9rxcGVsMsMJ0hY6vjB6EZbwZuzkwpcBxxlF2; sessionid=4x6y6zhkz8a5y99qcv3kh8932wdud4d5
+//
 
-	line = strtok(buffer,"\n");
+char **_break_into_lines(char *req, HttpRequest *res_req) {
+    char **mas = malloc(100 * sizeof(char *));
+    memset(mas, 100, NULL);
+    int nline = 0;
+    int d_symb = -1;
+    for (int i = 1; i < strlen(req); i++) {
+        if (req[i] == '\n' && req[i - 1] == '\n') {
+            d_symb = i;
+            break;
+        }
+    }
+    req[d_symb - 1] = '\0';
+    char *line = strtok(req, "\n");
+    while (line != NULL) {
+        mas[nline] = line;
+        line = strtok(NULL, "\n");
+        ++nline;
+    }
+    req = req + d_symb + 1;
+    strcpy(res_req->data, req);
+    return mas;
+}
 
-	char* lines[100] = {NULL};
-	int i = 0;
+int _parse_declaration(HttpRequest *req, char *line) {
+    char *method = strtok(line, " ");
+    if (method == NULL)
+        return -1;
+    char *url = strtok(NULL, " ");
+    if (url == NULL)
+        return -1;
+    char *http = strtok(NULL, " ");
+    if (http == NULL || strcmp(http, "HTTP/1.1") != 0)
+        return -1;
+    for (int i = 0; i < NUMBER_OF_METHODS; i++) {
+        if (strcmp(method, http_methods[i]) == 0) {
+            req->method = i;
+            break;
+        }
+    }
+    if (req->method == -1)
+        return -1;
+    strcpy(req->url, url);
+    return 0;
+}
 
-	while (line != NULL){
-		lines[i] = line;
-		line = strtok(NULL,"\n");
-		i++;
-	}
+int _parse_headers(HttpRequest *req, char **lines) {
+    char *header, *value;
+    req->headers = malloc(sizeof(map_str_t));
+    map_init(req->headers);
+    int nline = 0;
+    while (lines[nline] != NULL) {
+        header = strtok(lines[nline], ":");
+        value = strtok(NULL, "");
+        if (header == NULL || value == NULL) {
+            map_deinit(req->headers);
+            return -1;
+        }
+        map_set(req->headers, header, value + 1);
+        nline++;
+    }
+    return nline;
+}
 
-	char* first_line = lines[0];
-	char* word = strtok(first_line," ");
 
-	int found = 0;
-	for (int i=0;i<NUMBER_OF_METHODS;i++){
-		if (strcasecmp(word,http_methods[i])==0){
-			ans_req->method = i;		
-			found = 1;
-			break;	
-		}
-	}
+HttpRequest *parse(char *req_string) {
+    char req[MAX_REQUEST_LENGTH];
+    strcpy(req, req_string);
+    HttpRequest *res = malloc(sizeof(HttpRequest));
+    *res = (HttpRequest) {.method = -1, .url = NULL, .host = NULL, .headers = NULL, .data = NULL};
+    int status;
+    char **lines = _break_into_lines(req, res);
 
-	if (!found){
-		return NULL;
-	}
+    status = _parse_declaration(res, lines[0]);
+    if (status == -1) goto err_parse_out;
 
-	word = strtok(NULL," ");
-	ans_req->url =malloc(strlen(word));
-	memcpy(ans_req->url,word,strlen(word));
-	word = strtok(NULL," ");
-	i = 1;
-	
-	if (strcasecmp(word,"HTTP/1.1")!=0){
-		return NULL;
-	}
+    status = _parse_headers(res, lines + 1);
+    if (status == -1) goto err_parse_out;
 
-	map_void_t* headers = malloc(sizeof(map_void_t));
-	map_init(headers);
-	ans_req->headers = headers;
+    //status = _parse_data(req, lines + status + 1);
+    //if (status == -1) goto err_parse_out;
+    return res;
 
-	char *header,*value;
-
-	while (lines[i]!=NULL){
-		header = strtok(lines[i]," :");
-		value = strtok(NULL," ");
-		char *vbuffer = malloc(strlen(value));
-		memcpy(vbuffer,value,strlen(value));
-		map_set(headers,header,vbuffer);
-		i++;
-	}	
-
-	return ans_req;
+    err_parse_out:
+    {
+        free(lines);
+        free(res);
+        return NULL;
+    }
 }
