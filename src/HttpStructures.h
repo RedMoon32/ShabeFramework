@@ -1,4 +1,5 @@
 #include <map.h>
+#include <zconf.h>
 
 #define MAX_REQUEST_LENGTH 1000
 #define NUMBER_OF_METHODS 8
@@ -29,7 +30,9 @@ typedef struct {
 } HttpRequest;
 
 typedef struct {
-
+    u_int16_t status_code;
+    map_str_t *headers;
+    char data[DATA_LENGTH];
 } HttpResponse;
 
 extern char *get_request_header(HttpRequest *req, char *key);

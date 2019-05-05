@@ -13,7 +13,7 @@ void test1() {
                  "Accept-Encoding: gzip, deflate, br\n"
                  "Accept-Language: en-US,en;q=0.9\n"
                  "Cookie: csrftoken=hLrpfu90c6NBnEnjkb2FBYNIIzWJ9rxcGVsMsMJ0hY6vjB6EZbwZuzkwpcBxxlF2; sessionid=4x6y6zhkz8a5y99qcv3kh8932wdud4d5\n\nDATA HERE";
-    HttpRequest *req = parse(req1);
+    HttpRequest *req = parse_str_to_req(req1);
     assert(req != NULL);
     assert(req->method == GET);
     assert(strcmp(req->url, "/favicon.ico") == 0);
@@ -26,16 +26,32 @@ void test1() {
     assert(strcmp(get_request_header(req, "Cookie"),
                   "csrftoken=hLrpfu90c6NBnEnjkb2FBYNIIzWJ9rxcGVsMsMJ0hY6vjB6EZbwZuzkwpcBxxlF2; sessionid=4x6y6zhkz8a5y99qcv3kh8932wdud4d5") ==
            0);
-    assert(strcmp(req->data,"DATA HERE")==0);
+    assert(strcmp(req->data, "DATA HERE") == 0);
     printf("Test 1 success\n");
 }
 
+struct s2 {
+    char data[20];
+};
+
+struct s1 {
+    char a;
+    char b;
+    char c;
+    char d;
+};
 
 void test2() {
 
 }
 
 int main() {
-    test1();
-    test2();
+    struct s2 _s2_ex = (struct s2) {.data="kekich"};
+    printf("%s \n", _s2_ex.data);
+    struct s1 *_s1_ex;
+    _s1_ex = (struct s1 *) &_s2_ex;
+    printf("%d \n", strlen(&(_s1_ex->a)));
+    printf("%c %c %c %c\n", _s1_ex->a, _s1_ex->b, _s1_ex->c, _s1_ex->d);
+    //test1();
+    //test2();
 }

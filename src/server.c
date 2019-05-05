@@ -53,7 +53,7 @@ void append_to_requests(char *buffer, int new_socket, Request **reqs) {
 }
 
 void process_request(Request *req) {
-    parse(req);
+    parse_str_to_req(req);
 }
 
 void server_listen(int server_fd, struct sockaddr *address) {

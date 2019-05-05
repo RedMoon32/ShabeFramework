@@ -1,3 +1,3 @@
 #include "HttpStructures.h"
 
-HttpRequest* parse(char *req);
+HttpRequest* parse_str_to_req(char *req);
