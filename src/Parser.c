@@ -25,17 +25,17 @@ char **_break_into_lines(char *req, HttpRequest *res_req) {
     int nline = 0;
     int d_symb = -1;
     for (int i = 1; i < strlen(req); i++) {
-        if (req[i] == '\n' && req[i - 1] == '\n') {
+        if (req[i] == '\n' && req[i - 1] == '\r' && req[i - 2] == '\n' && req[i - 3] == '\r') {
             d_symb = i;
             break;
         }
     }
     if (d_symb == -1) return NULL;
     req[d_symb - 1] = '\0';
-    char *line = strtok(req, "\n");
+    char *line = strtok(req, "\n\r");
     while (line != NULL) {
         mas[nline] = line;
-        line = strtok(NULL, "\n");
+        line = strtok(NULL, "\n\r");
         ++nline;
     }
     req = req + d_symb + 1;
@@ -98,8 +98,6 @@ HttpRequest *parse_str_to_req(char *req_string) {
     status = _parse_headers(res, lines + 1);
     if (status == -1) goto err_parse_out;
 
-    //status = _parse_data(req, lines + status + 1);
-    //if (status == -1) goto err_parse_out;
     return res;
 
     err_parse_out:
@@ -125,15 +123,14 @@ x-frontend: front605105
 x-powered-by: PHP/3.19177
  */
 void parse_resp_to_str(HttpResponse *resp, char *dest) {
-    snprintf(dest, DATA_LENGTH, "HTTP/1.1 %u\n", resp->status_code);
+    snprintf(dest, DATA_LENGTH, "HTTP/1.1 %u\r\n", resp->status_code);
     const char *header;
     const char *value;
     map_iter_t iter = map_iter(resp->headers);
     while ((header = map_next(resp->headers, &iter))) {
         value = *map_get(resp->headers, header);
-        printf("%s -> %s", header, value);
-        snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s\n", header, value);
+        snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s\r\n", header, value);
     }
-    strcat(dest, "\n");
+    strcat(dest, "\r\n\r\n");
     strcat(dest, resp->data);
 }

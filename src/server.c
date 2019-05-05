@@ -5,12 +5,15 @@
 #include <netinet/in.h>
 #include <string.h>
 
+#include "Dispatcher.h"
 #include "HttpStructures.h"
 #include "server.h"
 #include "Parser.h"
 
-#define PORT 8080
+#define PORT 4000
 #define MAX_REQUESTS 1000
+
+Request *reqs[MAX_REQUESTS] = {NULL};
 
 int Socket(struct sockaddr_in *address) {
 
@@ -41,39 +44,61 @@ int Socket(struct sockaddr_in *address) {
     return server_fd;
 }
 
-void append_to_requests(char *buffer, int new_socket, Request **reqs) {
+int append_to_requests(char *buffer, int new_socket, Request **reqs) {
     for (int i = 0; i < MAX_REQUESTS; i++) {
         if (reqs[i] == NULL) {
             reqs[i] = (Request *) malloc(sizeof(Request));
             reqs[i]->clientfd = new_socket;
+            reqs[i]->id = i;
             memcpy(reqs[i]->request, buffer, strlen(buffer));
-            break;
+            return i;
         }
     }
+    return NULL;
 }
 
 void process_request(Request *req) {
-    parse_str_to_req(req);
+    HttpRequest *req_res = parse_str_to_req(req->request);
+    api_url_func *processor = dispatch(req_res);
+    if (processor == NULL)
+        return;
+    HttpResponse *resp = malloc(sizeof(HttpResponse));
+    resp->headers = malloc(sizeof(map_str_t));
+    map_init(resp->headers);
+    processor(req_res, resp);
+    char result[MAX_REQUEST_LENGTH];
+    char clength[10];
+    sprintf(clength, "%d", strlen(resp->data) + 2);
+    map_set(resp->headers, "Content-length", clength);
+    parse_resp_to_str(resp, result);
+    write(req->clientfd, result, MAX_REQUEST_LENGTH);
+
+    free(resp->headers);
+    free(resp);
+    free(req_res->headers);
+    free(req_res);
+    close(req->clientfd);
+    reqs[req->id] = NULL;
+    free(req);
 }
 
 void server_listen(int server_fd, struct sockaddr *address) {
     int addrlen = sizeof(address);
     int new_socket;
     long valread;
-    char *hello = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 28\n\n<h1>Hello fucking world</h1>";
-    Request *reqs[MAX_REQUESTS] = {NULL};
     while (1) {
         printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-        if ((new_socket = accept(server_fd, address, (socklen_t * ) & addrlen)) < 0) {
+        if ((new_socket = accept(server_fd, address, (socklen_t *) &addrlen)) < 0) {
             perror("In accept");
             exit(EXIT_FAILURE);
         }
 
-        char buffer[30000] = {0};
-        valread = read(new_socket, buffer, 30000);
-        append_to_requests(buffer, new_socket, reqs);
+        char buffer[MAX_REQUEST_LENGTH] = {0};
+        valread = read(new_socket, buffer, MAX_REQUEST_LENGTH);
+        int last_req = append_to_requests(buffer, new_socket, reqs);
         printf("%s\n", buffer);
-        write(new_socket, hello, strlen(hello));
+        process_request(reqs[last_req]);
+
         printf("------------------Response message sent-------------------\n");
         close(new_socket);
     }
