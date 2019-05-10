@@ -10,7 +10,7 @@
 #include "server.h"
 #include "Parser.h"
 
-#define PORT 4000
+#define PORT 8000
 #define MAX_REQUESTS 1000
 
 Request *reqs[MAX_REQUESTS] = {NULL};
@@ -57,15 +57,19 @@ int append_to_requests(char *buffer, int new_socket, Request **reqs) {
     return NULL;
 }
 
+
 void process_request(Request *req) {
     HttpRequest *req_res = parse_str_to_req(req->request);
     api_url_func *processor = dispatch(req_res);
-    if (processor == NULL)
-        return;
+
     HttpResponse *resp = malloc(sizeof(HttpResponse));
     resp->headers = malloc(sizeof(map_str_t));
     map_init(resp->headers);
-    processor(req_res, resp);
+    if (processor == NULL) {
+        resp->status_code = 404;
+    } else {
+        processor(req_res, resp);
+    }
     char result[MAX_REQUEST_LENGTH];
     char clength[10];
     sprintf(clength, "%d", strlen(resp->data) + 2);
@@ -80,7 +84,9 @@ void process_request(Request *req) {
     close(req->clientfd);
     reqs[req->id] = NULL;
     free(req);
+
 }
+
 
 void server_listen(int server_fd, struct sockaddr *address) {
     int addrlen = sizeof(address);
@@ -95,12 +101,12 @@ void server_listen(int server_fd, struct sockaddr *address) {
 
         char buffer[MAX_REQUEST_LENGTH] = {0};
         valread = read(new_socket, buffer, MAX_REQUEST_LENGTH);
+        if (valread == 0)
+            continue;
         int last_req = append_to_requests(buffer, new_socket, reqs);
         printf("%s\n", buffer);
         process_request(reqs[last_req]);
-
         printf("------------------Response message sent-------------------\n");
-        close(new_socket);
     }
 }
 

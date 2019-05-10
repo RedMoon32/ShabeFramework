@@ -5,11 +5,12 @@
 #define NUMBER_OF_METHODS 8
 #define DATA_LENGTH 10000
 #define URL_LENGTH 256
+#define PATH_LENGTH 256
 
 #ifndef STRUCTURES
 #define STRUCTURES
 
-extern enum Method {
+enum Method {
     GET = 0, HEAD = 1, POST = 2, PUT = 3, DELETE = 4, CONNECT = 5, OPTIONS = 6, TRACE = 7
 };
 extern char http_methods[8][10];

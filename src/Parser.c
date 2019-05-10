@@ -21,7 +21,7 @@
 
 char **_break_into_lines(char *req, HttpRequest *res_req) {
     char **mas = malloc(100 * sizeof(char *));
-    memset(mas, 100, NULL);
+    memset(mas, NULL, 100);
     int nline = 0;
     int d_symb = -1;
     for (int i = 1; i < strlen(req); i++) {
@@ -70,7 +70,7 @@ int _parse_headers(HttpRequest *req, char **lines) {
     req->headers = malloc(sizeof(map_str_t));
     map_init(req->headers);
     int nline = 0;
-    while (lines[nline] != NULL) {
+    while (lines[nline] != NULL && nline < 100) {
         header = strtok(lines[nline], ":");
         value = strtok(NULL, "");
         if (header == NULL || value == NULL) {
@@ -85,13 +85,18 @@ int _parse_headers(HttpRequest *req, char **lines) {
 
 
 HttpRequest *parse_str_to_req(char *req_string) {
+    if (req_string == NULL)
+        return NULL;
     char req[MAX_REQUEST_LENGTH];
     strcpy(req, req_string);
     HttpRequest *res = malloc(sizeof(HttpRequest));
     *res = (HttpRequest) {.method = -1, .url = "\0", .host = "\0", .headers = NULL, .data = "\0"};
     int status;
     char **lines = _break_into_lines(req, res);
-
+    if (lines == NULL) {
+        free(res);
+        return NULL;
+    }
     status = _parse_declaration(res, lines[0]);
     if (status == -1) goto err_parse_out;
 
