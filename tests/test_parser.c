@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <Parser.h>
+#include <parser.h>
 
 void test1() {
     char *req1 = "GET /favicon.ico HTTP/1.1\r\n"

@@ -2,11 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <map.h>
-#include "HttpStructures.h"
-#include "Parser.h"
+#include "http_structures.h"
+#include "parser.h"
 
-#define PARSE_OK 0
 
+//============HttpRequest example
 // Example of HttpRequest:
 // GET /favicon.ico HTTP/1.1
 // Host: 127.0.0.1:8080
@@ -19,6 +19,31 @@
 // Cookie: csrftoken=hLrpfu90c6NBnEnjkb2FBYNIIzWJ9rxcGVsMsMJ0hY6vjB6EZbwZuzkwpcBxxlF2; sessionid=4x6y6zhkz8a5y99qcv3kh8932wdud4d5
 //
 
+//============HttpResponse example
+//HTTP/1.1 200
+//access-control-expose-headers: X-Frontend
+//cache-control: no-store
+//content-encoding: gzip
+//content-length: 20
+//content-type: text/html; charset=windows-1251
+//date: Sun, 05 May 2019 06:41:04 GMT
+//server: nginx
+//status: 200
+//strict-transport-security: max-age=15768000
+//x-frontend: front605105
+//x-powered-by: PHP/3.19177
+//
+//
+//data here
+
+
+/**Convert http raw string to list of strings (separated by \n\r)
+ *
+ * @param req - raw http string
+ * @param res_req - http request struct(which will be changed,
+ * - data will be added to it
+ * @return pointer to lines
+ */
 char **_break_into_lines(char *req, HttpRequest *res_req) {
     char **mas = malloc(100 * sizeof(char *));
     memset(mas, NULL, 100);
@@ -43,6 +68,12 @@ char **_break_into_lines(char *req, HttpRequest *res_req) {
     return mas;
 }
 
+/** Parse first string (ex. GET /favicon.ico HTTP/1.1) and get method, url and http version from it
+ *
+ * @param req - resultant http request struct (method, url will be added to it)
+ * @param line - line to parse
+ * @return -1 on error, 0 on success
+ */
 int _parse_declaration(HttpRequest *req, char *line) {
     char *method = strtok(line, " ");
     if (method == NULL)
@@ -65,6 +96,13 @@ int _parse_declaration(HttpRequest *req, char *line) {
     return 0;
 }
 
+/** Parse list of headers and put headers in http req struct's map
+ * in form 'key' - 'value'
+ *
+ * @param req - resultant http request struct
+ * @param lines - pointer lines - pointer to start of the header content
+ * @return -1 on error, number of line where headers end on success
+ */
 int _parse_headers(HttpRequest *req, char **lines) {
     char *header, *value;
     req->headers = malloc(sizeof(map_str_t));
@@ -83,7 +121,11 @@ int _parse_headers(HttpRequest *req, char **lines) {
     return nline;
 }
 
-
+/** Main function - parse raw http request to struct
+ *
+ * @param req_string - string to parse
+ * @return NULL pointer on error, pointer to struct on success
+ */
 HttpRequest *parse_str_to_req(char *req_string) {
     if (req_string == NULL)
         return NULL;
@@ -113,19 +155,10 @@ HttpRequest *parse_str_to_req(char *req_string) {
     }
 }
 
-/*
- * HTTP/1.1 200
-access-control-expose-headers: X-Frontend
-cache-control: no-store
-content-encoding: gzip
-content-length: 20
-content-type: text/html; charset=windows-1251
-date: Sun, 05 May 2019 06:41:04 GMT
-server: nginx
-status: 200
-strict-transport-security: max-age=15768000
-x-frontend: front605105
-x-powered-by: PHP/3.19177
+/** Convert http response struct to string
+ *
+ * @param resp - input http response struct
+ * @param dest - output string
  */
 void parse_resp_to_str(HttpResponse *resp, char *dest) {
     snprintf(dest, DATA_LENGTH, "HTTP/1.1 %u\r\n", resp->status_code);

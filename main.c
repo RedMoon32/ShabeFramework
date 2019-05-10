@@ -3,8 +3,8 @@
 //
 
 #include <server.h>
-#include <Dispatcher.h>
-#include <HttpStructures.h>
+#include <dspatcher.h>
+#include <http_structures.h>
 #include <map.h>
 
 void home_page(HttpRequest *req, HttpResponse *resp) {
@@ -32,10 +32,10 @@ void login_page(HttpRequest *req, HttpResponse *resp) {
 }
 
 int main() {
-    reg_static_url("/home", "../temp1.html");
-    reg_static_url("/login", "../temp2.html");
-    //reg_url("/home.html", home_page);
-    //reg_url("/login.html", login_page);
+    register_static_url("/home", "../temp1.html");
+    register_static_url("/login", "../temp2.html");
+    //register_url("/home.html", home_page);
+    //register_url("/login.html", login_page);
     start_server();
     return 0;
 }

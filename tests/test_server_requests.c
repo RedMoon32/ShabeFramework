@@ -1,6 +1,6 @@
 #include <assert.h>
 #include "../src/server.h"
-#include "../src/HttpStructures.h"
+#include "http_structures.h"
 
 #define MAX_REQUSTS 10
 
