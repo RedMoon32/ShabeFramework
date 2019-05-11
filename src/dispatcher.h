@@ -1,3 +1,4 @@
+#include <alist.h>
 #include "http_structures.h"
 
 #define URL_NUMBERS 100
@@ -12,11 +13,11 @@ typedef struct api_url_struct {
 } api_url;
 
 
-api_url url_patterns[URL_NUMBERS];
+p_array_list url_patterns;
 
 
-void register_url(char *url, api_url_func *processor);
+int register_url(char *url, api_url_func *processor);
 
-void register_static_url(char *url, char *path);
+int register_static_url(char *url, char *path);
 
 api_url_func *get_request_processor(HttpRequest *req);

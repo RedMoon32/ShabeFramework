@@ -17,7 +17,7 @@ extern char http_methods[8][10];
 
 typedef struct {
     char request[MAX_REQUEST_LENGTH];
-    int clientfd;
+    int client_fd;
     int id;
 } Request;
 

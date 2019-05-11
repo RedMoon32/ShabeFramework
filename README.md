@@ -1,6 +1,6 @@
 # SHABE
   
-*"Reinventing wheels is da best thing in the world" (c) Unknown programmer*  
+*"Reinventing wheels is the best thing in the world" (c) C programmer*  
   
 Shabe is a new http-web-framework written fully in C
   

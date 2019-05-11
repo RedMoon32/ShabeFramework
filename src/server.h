@@ -5,4 +5,5 @@
 #include <string.h>
 #include "http_structures.h"
 
-void start_server();
+void server_listen();
+void server_init();

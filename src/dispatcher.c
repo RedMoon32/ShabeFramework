@@ -2,26 +2,25 @@
 // Created by rinat on 05.05.19.
 //
 
-#include <dspatcher.h>
+#include <dispatcher.h>
 #include <http_structures.h>
 #include <fcntl.h>
 #include <stdio.h>
 
-int last_url_number = 0;
 
 /** Function registers new url - some 'ur' will be processes with 'processor' function
  *
  * @param url - new url
  * @param processor - function which will process this url
  */
-void register_url(char *url, api_url_func *processor) {
-    if (last_url_number == URL_NUMBERS)
-        return;
-    api_url *new_api = &url_patterns[last_url_number];
+int register_url(char *url, api_url_func *processor) {
+    api_url *new_api = (api_url *) malloc(sizeof(api_url));
     strcpy(new_api->url, url);
     new_api->processor = processor;
-    last_url_number++;
+    int ind = array_list_add(url_patterns, new_api);
+    return ind;
 }
+
 
 /** Process static url
  *
@@ -33,9 +32,12 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
         resp->status_code = 404;
         return;
     }
-    for (int i = 0; i < NUMBER_OF_METHODS; i++) {
-        if (strcmp(req->url, url_patterns[i].url) == 0) {
-            int file_fd = open(url_patterns[i].path, O_RDONLY);
+    for (int i = array_list_iter(url_patterns); i != -1; i = array_list_next(url_patterns, i)) {
+        api_url *cur = array_list_get(url_patterns, i);
+        if (strcmp(req->url, cur->url) == 0) {
+            int file_fd = open(cur->path, O_RDONLY);
+            if (file_fd == -1)
+                return;
             char buffer[DATA_LENGTH];
             int st = read(file_fd, buffer, DATA_LENGTH);
             buffer[st] = '\0';
@@ -53,14 +55,11 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
  * @param url - path of url
  * @param path - path to static file
  */
-void register_static_url(char *url, char *path) {
-    if (last_url_number == URL_NUMBERS)
-        return;
-    api_url *new_api = &url_patterns[last_url_number];
-    strcpy(new_api->url, url);
-    strcpy(new_api->path, path);
-    new_api->processor = process_static_url;
-    last_url_number++;
+int register_static_url(char *url, char *path) {
+    int new = register_url(url, process_static_url);
+    api_url *cur = array_list_get(url_patterns, new);
+    strcpy(cur->path, path);
+    return new;
 }
 
 /** Function which returns pointer to function for processing some request
@@ -69,9 +68,10 @@ void register_static_url(char *url, char *path) {
  * @return NULL if not found otherwise pointer to function
  */
 api_url_func *get_request_processor(HttpRequest *req) {
-    for (int i = 0; i < last_url_number; i++) {
-        if (strcmp(url_patterns[i].url, req->url) == 0) {
-            return url_patterns[i].processor;
+    for (int i = array_list_iter(url_patterns); i != -1; i = array_list_next(url_patterns, i)) {
+        api_url *cur = array_list_get(url_patterns, i);
+        if (strcmp(cur->url, req->url) == 0) {
+            return cur->processor;
         }
     }
     return NULL;
