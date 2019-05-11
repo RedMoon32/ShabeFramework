@@ -4,18 +4,20 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <signal.h>
 
-#include "dspatcher.h"
+#include "dispatcher.h"
 #include "http_structures.h"
 #include "server.h"
 #include "parser.h"
+#include <alist.h>
 
 #define PORT 8000
-#define MAX_REQUESTS 1000
 
-Request *reqs[MAX_REQUESTS] = {NULL};
+p_array_list reqs;
+int master_fd;
 
-/** Initialize master tcp - socket on predefined port in IPV4 space
+/** Initialize master tcp socket on predefined port in IPV4 space
  *
  * @return file descriptor of new socket (or will exit if error happened)
  */
@@ -56,17 +58,13 @@ int Socket() {
  * @param reqs - array of pointers to request struct
  * @return NULL on error, index of new request in queue on success
  */
-int append_to_requests(char *buffer, int new_socket, Request **reqs) {
-    for (int i = 0; i < MAX_REQUESTS; i++) {
-        if (reqs[i] == NULL) {
-            reqs[i] = (Request *) malloc(sizeof(Request));
-            reqs[i]->clientfd = new_socket;
-            reqs[i]->id = i;
-            memcpy(reqs[i]->request, buffer, strlen(buffer));
-            return i;
-        }
-    }
-    return NULL;
+int append_to_requests(char *buffer, int new_socket) {
+    Request *new_req = (Request *) malloc(sizeof(Request));
+    new_req->client_fd = new_socket;
+    memcpy(new_req->request, buffer, strlen(buffer));
+    int ind = array_list_add(reqs, new_req);
+    new_req->id = ind;
+    return ind;
 }
 
 /** Function which processes http request:
@@ -88,35 +86,40 @@ void process_request(Request *req) {
     } else {
         processor(req_res, resp);
     }
+
     char result[MAX_REQUEST_LENGTH];
     char clength[10];
     sprintf(clength, "%d", strlen(resp->data) + 2);
     map_set(resp->headers, "Content-length", clength);
     parse_resp_to_str(resp, result);
-    write(req->clientfd, result, MAX_REQUEST_LENGTH);
+    write(req->client_fd, result, MAX_REQUEST_LENGTH);
     printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
+
     free(resp->headers);
     free(resp);
     free(req_res->headers);
     free(req_res);
 
     out:
-    close(req->clientfd);
-    reqs[req->id] = NULL;
+    close(req->client_fd);
+    array_list_remove_at(reqs, req->id);
     free(req);
 
 }
 
 /**
  * Main listening part
- * @param server_fd - master socket fd
+ * @param server_fd - master socket fd (with some port binded to this socket)
  */
-void server_listen(int server_fd) {
+void server_listen() {
+    int server_fd = master_fd;
     struct sockaddr address;
     int addrlen = sizeof(address);
     int new_socket;
     int valread;
-    printf("==========<Server is listening on port 8000>==========\n");
+
+    printf("==========<   Server is listening on port 8000   >==========\n");
+
     while (1) {
         if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen)) < 0) {
             perror("In accept");
@@ -129,16 +132,25 @@ void server_listen(int server_fd) {
             close(new_socket);
             continue;
         }
-        int last_req = append_to_requests(buffer, new_socket, reqs);
-        process_request(reqs[last_req]);
+        int last_req = append_to_requests(buffer, new_socket);
+        process_request(array_list_get(reqs, last_req));
     }
+}
+
+
+void handler_server_out() {
+    printf("Closing server ...\n");
+    close(master_fd);
 }
 
 /** Function to start server on 8000 port
  *
  */
-void start_server() {
-    int server_fd;
-    server_fd = Socket();
-    server_listen(server_fd);
+
+
+void server_init() {
+    signal(SIGINT, handler_server_out);
+    reqs = create_array_list(100);
+    url_patterns = create_array_list(100);
+    master_fd = Socket();
 }
