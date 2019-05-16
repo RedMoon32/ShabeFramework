@@ -46,7 +46,7 @@
  */
 char **_break_into_lines(char *req, HttpRequest *res_req) {
     char **mas = malloc(100 * sizeof(char *));
-    memset(mas, NULL, 100);
+    memset(mas, 0, 100);
     int nline = 0;
     int d_symb = -1;
     for (int i = 1; i < strlen(req); i++) {
@@ -169,6 +169,6 @@ void parse_resp_to_str(HttpResponse *resp, char *dest) {
         value = *map_get(resp->headers, header);
         snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s\r\n", header, value);
     }
-    strcat(dest, "\r\n\r\n");
+    strcat(dest, "\r\n");
     strcat(dest, resp->data);
 }

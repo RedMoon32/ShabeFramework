@@ -33,7 +33,7 @@ void set_response_header(HttpResponse *resp, char *key, char *value) {
  * @param key - key string to get
  * @return NULL if not found else string
  */
-char *get_response_header(HttpRequest *resp, char *key) {
+char *get_response_header(HttpResponse *resp, char *key) {
     char **d = map_get(resp->headers, key);
     if (d != NULL)
         return *d;

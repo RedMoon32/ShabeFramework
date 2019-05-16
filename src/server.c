@@ -95,7 +95,8 @@ void process_request(Request *req) {
     sprintf(clength, "%d", strlen(resp->data) + 2);
     map_set(resp->headers, "Content-length", clength);
     parse_resp_to_str(resp, result);
-    write(req->client_fd, result, MAX_REQUEST_LENGTH);
+    strcat(result, "\0");
+    int st = write(req->client_fd, result, strlen(result) + 1);
     printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
 
     free(resp->headers);
@@ -104,7 +105,7 @@ void process_request(Request *req) {
     free(req_res);
 
     out:
-    close(req->client_fd);
+    st = close(req->client_fd);
     array_list_remove_at(reqs, req->id);
     free(req);
 
@@ -141,6 +142,12 @@ void *server_listen_() {
     }
 }
 
+void server_deinit() {
+    free(reqs);
+    free(url_patterns);
+    close(master_fd);
+}
+
 /**
  * Ask for out and if 'q' symbol then exit
  */
@@ -150,7 +157,7 @@ void *ask_out() {
         scanf("%c", &c);
         if (c == 'q') {
             printf("Closing server ...\n");
-            close(master_fd);
+            server_deinit();
             exit(0);
         }
 

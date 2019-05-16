@@ -38,4 +38,8 @@ typedef struct {
 
 extern char *get_request_header(HttpRequest *req, char *key);
 
+extern void set_response_header(HttpResponse *resp, char *key, char *value);
+
+extern char *get_response_header(HttpResponse *resp, char *key);
+
 #endif

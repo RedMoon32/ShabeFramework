@@ -2,7 +2,7 @@
   
 *"Reinventing wheels is the best thing in the world" (c) C programmer*  
   
-Shabe is a new http-web-framework written fully in C
+Shabe is a new http-server written fully in C
   
 ## What's inside
 Simple overview of architecture:    

@@ -29,7 +29,7 @@ int register_url(char *url, api_url_func *processor) {
  */
 void process_static_url(HttpRequest *req, HttpResponse *resp) {
     if (req->method != GET) {
-        resp->status_code = 404;
+        resp->status_code = 400;
         return;
     }
     for (int i = array_list_iter(url_patterns); i != -1; i = array_list_next(url_patterns, i)) {
