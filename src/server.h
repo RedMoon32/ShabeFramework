@@ -4,8 +4,10 @@
 #include <netinet/in.h>
 #include <string.h>
 #include "http_structures.h"
+#include <alist.h>
 
 extern p_array_list reqs;
+extern int SERVER_PORT;
 
 void process_request(Request *req);
 void server_listen();

@@ -13,11 +13,13 @@
 #include <alist.h>
 #include <pthread.h>
 
-#define PORT 8000
+
 #define NOT_FOUND_STRING "<html><h4> 404 not found </h4></html>"
 
 p_array_list reqs;
 int master_fd;
+int SERVER_PORT;
+int listening = 0;
 
 /** Initialize master tcp socket on predefined port in IPV4 space
  *
@@ -35,7 +37,7 @@ int Socket() {
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port = htons(SERVER_PORT);
 
     memset(address.sin_zero, '\0', sizeof address.sin_zero);
 
@@ -89,7 +91,6 @@ void process_request(Request *req) {
     } else {
         processor(req_res, resp);
     }
-
     char result[MAX_REQUEST_LENGTH];
     char clength[10];
     sprintf(clength, "%d", strlen(resp->data) + 2);
@@ -125,10 +126,9 @@ void *server_listen_() {
 
     printf("\n* Server is listening on port 8000\n* Enter 'q' to exit\n\n");
 
-    while (1) {
+    while (listening) {
         if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen)) < 0) {
             perror("In accept");
-            exit(EXIT_FAILURE);
         }
 
         char buffer[MAX_REQUEST_LENGTH] = {0};
@@ -143,6 +143,9 @@ void *server_listen_() {
 }
 
 void server_deinit() {
+    listening = 0;
+    array_list_free_all(url_patterns);
+    array_list_free_all(reqs);
     free(reqs);
     free(url_patterns);
     close(master_fd);
@@ -168,6 +171,7 @@ void *ask_out() {
  * Function to start listening in new thread
  */
 void server_listen() {
+    listening = 1;
     pthread_t listen_thread, ask_out_thread;
     pthread_create(&listen_thread, NULL, server_listen_, NULL);
     pthread_create(&ask_out_thread, NULL, ask_out, NULL);
@@ -178,6 +182,7 @@ void server_listen() {
  * Function to start server on 8000 port
  */
 void server_init() {
+    SERVER_PORT = 8000;
     reqs = create_array_list(100);
     url_patterns = create_array_list(100);
     master_fd = Socket();

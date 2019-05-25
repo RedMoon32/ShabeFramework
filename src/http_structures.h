@@ -10,6 +10,8 @@
 #ifndef STRUCTURES
 #define STRUCTURES
 
+typedef map_str_t header_dict;
+
 enum Method {
     GET = 0, HEAD = 1, POST = 2, PUT = 3, DELETE = 4, CONNECT = 5, OPTIONS = 6, TRACE = 7
 };
@@ -26,13 +28,13 @@ typedef struct {
     enum Method method;
     char url[URL_LENGTH];
     char host[URL_LENGTH];
-    map_str_t *headers;
+    header_dict *headers;
     char data[DATA_LENGTH];
 } HttpRequest;
 
 typedef struct {
     u_int16_t status_code;
-    map_str_t *headers;
+    header_dict *headers;
     char data[DATA_LENGTH];
 } HttpResponse;
 
