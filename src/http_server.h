@@ -6,6 +6,7 @@
 #include "http_structures.h"
 #include <alist.h>
 
+#define CONTENT_TYPE "Content-Type"
 extern p_array_list reqs;
 extern int SERVER_PORT;
 

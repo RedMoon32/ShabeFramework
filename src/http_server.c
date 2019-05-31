@@ -16,6 +16,7 @@
 
 #define NOT_FOUND_STRING "<html><h4> 404 not found </h4></html>"
 
+
 p_array_list reqs;
 int master_fd;
 int SERVER_PORT;
@@ -78,6 +79,9 @@ int append_to_requests(char *buffer, int new_socket) {
  */
 void process_request(Request *req) {
     HttpRequest *req_res = parse_str_to_req(req->request);
+    if (!get_request_header(req_res, CONTENT_TYPE)) {
+        map_set(req_res->headers, CONTENT_TYPE, "text/plain");
+    }
     if (req_res == NULL)
         goto out;
     api_url_func *processor = get_request_processor(req_res);
@@ -98,6 +102,9 @@ void process_request(Request *req) {
     parse_resp_to_str(resp, result);
     strcat(result, "\0");
     int st = write(req->client_fd, result, strlen(result) + 1);
+#ifdef TESTING
+    printf("Response %s:\n",result);
+#endif
     printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
 
     free(resp->headers);
@@ -137,6 +144,9 @@ void *server_listen_() {
             close(new_socket);
             continue;
         }
+#ifdef TESTING
+        printf("%s - new request\n", buffer);
+#endif
         int last_req = append_to_requests(buffer, new_socket);
         process_request(array_list_get(reqs, last_req));
     }
