@@ -2,7 +2,7 @@
 // Created by rinat on 03.05.19.
 //
 
-#include <server.h>
+#include <http_server.h>
 #include <dispatcher.h>
 #include <http_structures.h>
 #include <map.h>

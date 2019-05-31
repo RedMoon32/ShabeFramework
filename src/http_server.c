@@ -8,7 +8,7 @@
 
 #include "dispatcher.h"
 #include "http_structures.h"
-#include "server.h"
+#include "http_server.h"
 #include "parser.h"
 #include <alist.h>
 #include <pthread.h>

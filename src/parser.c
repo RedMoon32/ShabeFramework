@@ -169,6 +169,6 @@ void parse_resp_to_str(HttpResponse *resp, char *dest) {
         value = *map_get(resp->headers, header);
         snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s\r\n", header, value);
     }
-    strcat(dest, "\r\n");
+    strcat(dest, "\r\n\r\n");
     strcat(dest, resp->data);
 }

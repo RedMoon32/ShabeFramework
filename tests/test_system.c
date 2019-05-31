@@ -4,7 +4,7 @@
 #include <parser.h>
 #include <dispatcher.h>
 #include <fcntl.h>
-#include <server.h>
+#include <http_server.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
