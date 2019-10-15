@@ -196,4 +196,5 @@ void server_init() {
     reqs = create_array_list(100);
     url_patterns = create_array_list(100);
     master_fd = Socket();
+    map_init(&mapper_url);
 }

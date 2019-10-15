@@ -18,6 +18,7 @@ int register_url(char *url, api_url_func *processor) {
     strcpy(new_api->url, url);
     new_api->processor = processor;
     int ind = array_list_add(url_patterns, new_api);
+    map_set(&mapper_url,new_api->path,new_api);
     return ind;
 }
 
@@ -32,8 +33,11 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
         resp->status_code = 400;
         return;
     }
-    for (int i = array_list_iter(url_patterns); i != -1; i = array_list_next(url_patterns, i)) {
-        api_url *cur = array_list_get(url_patterns, i);
+    const char *key;
+    map_iter_t iter = map_iter(&m);
+
+    while ((key = map_next(&mapper_url, &iter))) {
+        api_url *cur = *map_get(&mapper_url, key);
         if (strcmp(req->url, cur->url) == 0) {
             int file_fd = open(cur->path, O_RDONLY);
             if (file_fd == -1)
@@ -58,6 +62,7 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
 int register_static_url(char *url, char *path) {
     int new = register_url(url, process_static_url);
     api_url *cur = array_list_get(url_patterns, new);
+    api_url* cur2 = map_get(&mapper_url,url);
     strcpy(cur->path, path);
     return new;
 }
@@ -68,11 +73,10 @@ int register_static_url(char *url, char *path) {
  * @return NULL if not found otherwise pointer to function
  */
 api_url_func *get_request_processor(HttpRequest *req) {
-    for (int i = array_list_iter(url_patterns); i != -1; i = array_list_next(url_patterns, i)) {
-        api_url *cur = array_list_get(url_patterns, i);
-        if (strcmp(cur->url, req->url) == 0) {
-            return cur->processor;
-        }
+    const char *key;
+    map_iter_t iter = map_iter(&m);
+    while ((key = map_next(&mapper_url, &iter))) {
+        api_url *cur = *map_get(&mapper_url, key);
     }
     return NULL;
 }

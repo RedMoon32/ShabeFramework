@@ -14,6 +14,7 @@ typedef struct api_url_struct {
 
 
 p_array_list url_patterns;
+map_str_t mapper_url;
 
 
 int register_url(char *url, api_url_func *processor);
