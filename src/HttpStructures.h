@@ -3,6 +3,8 @@
 #ifndef STRUCTURES
 #define STRUCTURES
 
+typedef enum { GET, PUT, POST, DELETE} type;
+
 typedef struct {
 	char request[1000];
 	int clientfd;
@@ -17,11 +19,15 @@ typedef struct{
 } Date;
 
 typedef struct{
+	enum request type;
+	char user_agent[1000];
 	char connection_type[50];
 	char server[50];
 	int content_length;
 	char content_type[50];
 	char remote_address[20];
+	struct Date* request_date;
+	struct Date* last_modified;
 } HttpRequest;
 
 typedef struct{
