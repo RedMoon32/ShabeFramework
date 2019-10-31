@@ -22,7 +22,7 @@ void first_line_handling(struct HttpRequest* new_request, char* line){
     memcpy(new_request->domen, line, i - temp_i);
 }
 
-HttpRequest parse_http_request(char *http_request){
+HttpRequest* parse_http_request(char *http_request){
     struct HttpRequest *new;
     char* line;
     int i = 0, line_cnt = 0;
