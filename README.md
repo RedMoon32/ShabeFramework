@@ -3,7 +3,11 @@
 *"Reinventing wheels is the best thing in the world" (c) C programmer*  
   
 Shabe is a new http-server written fully in C
-  
+
+## Contribution
+Contribution to this repo (for your experience or just fun) is highly appreciated.  
+Write me via email rinat.babichev@gmail.com or in telegram - @vionenv
+
 ## What's inside
 Simple overview of architecture:    
 ![Architecture](https://github.com/RedMoon32/Shabe/blob/master/ShabeFramework.jpg)
@@ -60,5 +64,6 @@ int main() {
 }
    ```
 *More functions can be found in header files*
+
 
 <sub><sup>Created and supported by Rinat Babichev as pet-project.<sub><sup>
