@@ -28,13 +28,13 @@ typedef struct {
     enum Method method;
     char url[URL_LENGTH];
     char host[URL_LENGTH];
-    header_dict *headers;
+    header_dict headers;
     char data[DATA_LENGTH];
 } HttpRequest;
 
 typedef struct {
     u_int16_t status_code;
-    header_dict *headers;
+    header_dict headers;
     char data[DATA_LENGTH];
 } HttpResponse;
 

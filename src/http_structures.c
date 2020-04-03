@@ -10,7 +10,7 @@ char http_methods[8][10] = {"GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "
  * @return NULL if not found else string
  */
 char *get_request_header(HttpRequest *req, char *key) {
-    char **d = map_get(req->headers, key);
+    char **d = map_get(&req->headers, key);
     if (d != NULL)
         return *d;
     else
@@ -24,7 +24,7 @@ char *get_request_header(HttpRequest *req, char *key) {
  * @param value - new value
  */
 void set_response_header(HttpResponse *resp, char *key, char *value) {
-    map_set(resp->headers, key, value);
+    map_set(&resp->headers, key, value);
 }
 
 /** Get response header
@@ -34,7 +34,7 @@ void set_response_header(HttpResponse *resp, char *key, char *value) {
  * @return NULL if not found else string
  */
 char *get_response_header(HttpResponse *resp, char *key) {
-    char **d = map_get(resp->headers, key);
+    char **d = map_get(&resp->headers, key);
     if (d != NULL)
         return *d;
     else

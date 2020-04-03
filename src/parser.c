@@ -105,17 +105,16 @@ int _parse_declaration(HttpRequest *req, char *line) {
  */
 int _parse_headers(HttpRequest *req, char **lines) {
     char *header, *value;
-    req->headers = malloc(sizeof(map_str_t));
-    map_init(req->headers);
+    map_init(&req->headers);
     int nline = 0;
     while (lines[nline] != NULL && nline < 100) {
         header = strtok(lines[nline], ":");
         value = strtok(NULL, "");
         if (header == NULL || value == NULL) {
-            map_deinit(req->headers);
+            map_deinit(&req->headers);
             return -1;
         }
-        map_set(req->headers, header, value + 1);
+        map_set(&req->headers, header, value + 1);
         nline++;
     }
     return nline;
@@ -132,7 +131,7 @@ HttpRequest *parse_str_to_req(char *req_string) {
     char req[MAX_REQUEST_LENGTH];
     strcpy(req, req_string);
     HttpRequest *res = malloc(sizeof(HttpRequest));
-    *res = (HttpRequest) {.method = -1, .url = "\0", .host = "\0", .headers = NULL, .data = "\0"};
+    *res = (HttpRequest) {.method = -1, .url = "\0", .host = "\0", .data = "\0"};
     int status;
     char **lines = _break_into_lines(req, res);
     if (lines == NULL) {
@@ -164,9 +163,9 @@ void parse_resp_to_str(HttpResponse *resp, char *dest) {
     snprintf(dest, DATA_LENGTH, "HTTP/1.1 %u\r\n", resp->status_code);
     const char *header;
     const char *value;
-    map_iter_t iter = map_iter(resp->headers);
-    while ((header = map_next(resp->headers, &iter))) {
-        value = *map_get(resp->headers, header);
+    map_iter_t iter = map_iter(&resp->headers);
+    while ((header = map_next(&resp->headers, &iter))) {
+        value = *map_get(&resp->headers, header);
         snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s\r\n", header, value);
     }
     strcat(dest, "\r\n\r\n");

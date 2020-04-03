@@ -42,13 +42,13 @@ void test_parse() {
 
 void test_resp_string() {
     HttpResponse *resp = malloc(sizeof(HttpResponse));
-    *resp = (HttpResponse) {.status_code = 200, .data = "<html><h1>Kek</h1></html>", .headers = NULL};
-    resp->headers = malloc(sizeof(map_str_t));
-    map_init(resp->headers);
-    map_set(resp->headers, "access-control-expose-headers", "X-Frontend");
-    map_set(resp->headers, "cache-control", "no-store");
-    map_set(resp->headers, "content-encoding", "gzip");
-    map_set(resp->headers, "content-type", "text/html; charset=windows-1251");
+    *resp = (HttpResponse) {.status_code = 200, .data = "<html><h1>Kek</h1></html>"};
+
+    map_init(&resp->headers);
+    map_set(&resp->headers, "access-control-expose-headers", "X-Frontend");
+    map_set(&resp->headers, "cache-control", "no-store");
+    map_set(&resp->headers, "content-encoding", "gzip");
+    map_set(&resp->headers, "content-type", "text/html; charset=windows-1251");
     char data[MAX_REQUEST_LENGTH];
     parse_resp_to_str(resp, data);
     assert(strcmp(data, "HTTP/1.1 200\r\n"
@@ -59,17 +59,18 @@ void test_resp_string() {
                         "\r\n"
                         "<html><h1>Kek</h1></html>") == 0);
     printf("=== Test 2 success\n");
-    free(resp->headers);
+    map_deinit(&resp->headers);
     free(resp);
 }
 
 void test_create_dispatcher() {
-    url_patterns = create_array_list(100);
+    map_init(&url_patterns);
     register_url("/home.html", NULL);
-    assert(url_patterns->count == 1);
-    assert(strcmp(((api_url *) url_patterns->array[0])->url, "/home.html") == 0);
-    array_list_free_all(url_patterns);
-    free(url_patterns);
+    api_url *func = (api_url *) map_get(&url_patterns, "/home.html");
+
+    assert(strcmp(func->url, "/home.html") == 0);
+    //array_list_free_all(url_patterns);
+    //free(url_patterns);
     printf("=== Test 3 success\n");
 }
 
@@ -101,7 +102,7 @@ void test_process_request() {
         exit(-1);
     }
     buff[l] = '\0';
-    printf("%s \n",buff);
+    printf("%s \n", buff);
     assert(strcmp(buff, "HTTP/1.1 200\r\n"
                         "Content-length: 42\r\n"
                         "content_type: text/html\r\n"
