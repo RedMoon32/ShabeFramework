@@ -20,7 +20,7 @@ int main() {
     // register our function in dispatcher
     register_url("/home/", hello_page);
     // or register html page from some file
-    register_static_url("/login/", "temp2.html");
+    register_static_url("/login/", "./examples/temp2.html");
     // start to listen on 8000 port
     server_listen();
 }

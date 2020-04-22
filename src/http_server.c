@@ -80,15 +80,15 @@ int append_to_requests(char *buffer, int new_socket) {
 void process_request(Request *req) {
     HttpRequest *req_res = parse_str_to_req(req->request);
     if (!get_request_header(req_res, CONTENT_TYPE)) {
-        map_set(req_res->headers, CONTENT_TYPE, "text/plain");
+        map_set(&req_res->headers, CONTENT_TYPE, "text/plain");
     }
     if (req_res == NULL)
         goto out;
     api_url_func *processor = get_request_processor(req_res);
 
     HttpResponse *resp = malloc(sizeof(HttpResponse));
-    resp->headers = malloc(sizeof(map_str_t));
-    map_init(resp->headers);
+
+    map_init(&resp->headers);
     if (processor == NULL) {
         resp->status_code = 404;
         strcpy(resp->data, NOT_FOUND_STRING);
@@ -98,7 +98,7 @@ void process_request(Request *req) {
     char result[MAX_REQUEST_LENGTH];
     char clength[10];
     sprintf(clength, "%d", strlen(resp->data) + 2);
-    map_set(resp->headers, "Content-length", clength);
+    map_set(&resp->headers, "Content-length", clength);
     parse_resp_to_str(resp, result);
     strcat(result, "\0");
     int st = write(req->client_fd, result, strlen(result) + 1);
@@ -107,9 +107,9 @@ void process_request(Request *req) {
 #endif
     printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
 
-    free(resp->headers);
+    map_deinit(&resp->headers);
     free(resp);
-    free(req_res->headers);
+    map_deinit(&req_res->headers);
     free(req_res);
 
     out:
@@ -154,10 +154,13 @@ void *server_listen_() {
 
 void server_deinit() {
     listening = 0;
-    array_list_free_all(url_patterns);
+
+    map_free_all(&url_patterns);
+
     array_list_free_all(reqs);
-    free(reqs);
-    free(url_patterns);
+    delete_array_list(reqs);
+
+    map_deinit(&url_patterns);
     close(master_fd);
 }
 
@@ -194,6 +197,6 @@ void server_listen() {
 void server_init() {
     SERVER_PORT = 8000;
     reqs = create_array_list(100);
-    url_patterns = create_array_list(100);
+    map_init(&url_patterns);
     master_fd = Socket();
 }

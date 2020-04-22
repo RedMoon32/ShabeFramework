@@ -50,14 +50,14 @@ typedef struct {
 #define map_remove(m, key)\
   map_remove_(&(m)->base, key)
 
-
 #define map_iter(m)\
   map_iter_()
-
 
 #define map_next(m, iter)\
   map_next_(&(m)->base, iter)
 
+#define map_free_all(m)\
+  map_free_all_(&(m)->base)
 
 void map_deinit_(map_base_t *m);
 void *map_get_(map_base_t *m, const char *key);
@@ -65,7 +65,7 @@ int map_set_(map_base_t *m, const char *key, void *value, int vsize);
 void map_remove_(map_base_t *m, const char *key);
 map_iter_t map_iter_(void);
 const char *map_next_(map_base_t *m, map_iter_t *iter);
-
+void map_free_all_(map_base_t *m);
 
 typedef map_t(void*) map_void_t;
 typedef map_t(char*) map_str_t;

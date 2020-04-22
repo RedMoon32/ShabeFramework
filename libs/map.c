@@ -191,3 +191,14 @@ const char *map_next_(map_base_t *m, map_iter_t *iter) {
   }
   return (char*) (iter->node + 1);
 }
+
+void map_free_all_(map_base_t *m){
+    const char *key;
+    map_iter_t iter = map_iter(m);
+
+    while ((key = map_next_(m, &iter))) {
+        void **res = map_get_(m, key);
+        if (res != NULL)
+            free(*res);
+    }
+}

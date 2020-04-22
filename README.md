@@ -6,7 +6,7 @@ Shabe is a new http-server written fully in C
 
 ## Contribution
 Contribution to this repo (for your experience or just fun) is highly appreciated.  
-Write me via email rinat.babichev@gmail.com or in telegram - @vionenv
+Write me via telegram - @vionenv
 
 ## What's inside
 Simple overview of architecture:    
