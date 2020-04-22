@@ -1,5 +1,5 @@
 # SHABE 
-1.0.1 latest stble version
+1.0.1 latest stable version
 
 *"Reinventing wheels is the best thing in the world" (c) C programmer*  
   
