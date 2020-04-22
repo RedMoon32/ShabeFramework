@@ -21,7 +21,6 @@ p_array_list create_array_list(size_t size) {
 
 void delete_array_list(p_array_list alist) {
     free(alist->array);
-    free(alist);
 }
 
 size_t expand_array_list(p_array_list alist) {

@@ -154,15 +154,11 @@ void *server_listen_() {
 
 void server_deinit() {
     listening = 0;
-    const char *key;
-    map_iter_t iter = map_iter(&url_patterns);
 
-    while ((key = map_next(&url_patterns, &iter))) {
-        free(*map_get(&url_patterns, key));
-    }
+    map_free_all(&url_patterns);
 
     array_list_free_all(reqs);
-    free(reqs);
+    delete_array_list(reqs);
 
     map_deinit(&url_patterns);
     close(master_fd);

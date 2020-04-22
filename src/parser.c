@@ -45,26 +45,36 @@
  * @return pointer to lines
  */
 char **_break_into_lines(char *req, HttpRequest *res_req) {
-    char **mas = malloc(100 * sizeof(char *));
-    memset(mas, 0, 100);
+#define STR_COUNT 100
+    // @todo - replace 100
+    char **mas = malloc(STR_COUNT * sizeof(char *));
+    memset(mas, 0, STR_COUNT);
     int nline = 0;
-    int d_symb = -1;
+    int d_symb = -1; // index represent start of DATA sector (splitted by CRLF CRLF)
+    char *start = req;
+    mas[0] = start;
     for (int i = 1; i < strlen(req); i++) {
-        if (req[i] == '\n' && req[i - 1] == '\r' && req[i - 2] == '\n' && req[i - 3] == '\r') {
-            d_symb = i;
-            break;
+        if (req[i-1] == CR && req[i] == LF){
+
+            req[i-1] = (char) NULL;
+            req[i] = (char) NULL;
+
+            if (i < strlen(req) - 2 && req[i+1] == CR && req[i+2] == LF) {
+                d_symb = i;
+                break;
+            }
+            nline ++;
+            if (nline == STR_COUNT)
+                break;
+
+            mas[nline] = start + i + 1;
         }
     }
-    if (d_symb == -1) return NULL;
-    req[d_symb - 1] = '\0';
-    char *line = strtok(req, "\n\r");
-    while (line != NULL) {
-        mas[nline] = line;
-        line = strtok(NULL, "\n\r");
-        ++nline;
+    if (d_symb != -1) {
+        req[d_symb - 1] = '\0';
+        req = req + d_symb + 1;
+        strcpy(res_req->data, req);
     }
-    req = req + d_symb + 1;
-    strcpy(res_req->data, req);
     return mas;
 }
 
@@ -160,14 +170,14 @@ HttpRequest *parse_str_to_req(char *req_string) {
  * @param dest - output string
  */
 void parse_resp_to_str(HttpResponse *resp, char *dest) {
-    snprintf(dest, DATA_LENGTH, "HTTP/1.1 %u\r\n", resp->status_code);
+    snprintf(dest, DATA_LENGTH, "HTTP/1.1 %u"CRLF, resp->status_code);
     const char *header;
     const char *value;
     map_iter_t iter = map_iter(&resp->headers);
     while ((header = map_next(&resp->headers, &iter))) {
         value = *map_get(&resp->headers, header);
-        snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s\r\n", header, value);
+        snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s"CRLF, header, value);
     }
-    strcat(dest, "\r\n\r\n");
+    strcat(dest, CRLF CRLF);
     strcat(dest, resp->data);
 }

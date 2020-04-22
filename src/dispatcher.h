@@ -23,4 +23,6 @@ int register_static_url(char *url, char *path);
 
 api_url_func *get_request_processor(HttpRequest *req);
 
+api_url * get_api_func(char *url);
+
 #endif
