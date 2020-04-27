@@ -1,5 +1,6 @@
-# SHABE
-  
+# SHABE 
+1.0.1 latest stable version
+
 *"Reinventing wheels is the best thing in the world" (c) C programmer*  
   
 Shabe is a new http-server written fully in C
