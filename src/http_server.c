@@ -13,10 +13,6 @@
 #include <alist.h>
 #include <pthread.h>
 
-
-#define NOT_FOUND_STRING "<html><h4> 404 not found </h4></html>"
-
-
 p_array_list reqs;
 int master_fd;
 int SERVER_PORT;

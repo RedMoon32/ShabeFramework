@@ -7,15 +7,21 @@
 #include <fcntl.h>
 #include <stdio.h>
 
+
 /**
  * Get api func from url patterns by key
  * @param url - key
  */
 api_url* get_api_func(char *url){
+
     void** res = map_get(&url_patterns, url);
+
     if (res != NULL){
-        return (api_url*) *res;
+        api_url* api = *res;
+
+        return api;
     }
+
     return NULL;
 }
 
@@ -38,7 +44,6 @@ int register_url(char *url, api_url_func *processor) {
     return 0;
 }
 
-
 /** Process static url
  *
  * @param req - input http request which contains url path
@@ -47,19 +52,19 @@ int register_url(char *url, api_url_func *processor) {
 void process_static_url(HttpRequest *req, HttpResponse *resp) {
 
     if (req->method != GET) {
-        resp->status_code = 400;
+        BAD_RESPONSE(resp);
         return;
     }
 
     api_url *api_func = get_api_func(req->url);
     if (api_func == NULL) {
-        resp->status_code = 404;
+        NOT_FOUND_RESPONSE(resp);
         return;
     }
 
     int file_fd = open(api_func->path, O_RDONLY);
     if (file_fd == -1) {
-        resp->status_code = 500;
+        INTERNAL_ERROR_RESPONSE(resp);
         return;
     }
 
@@ -68,8 +73,7 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
     buffer[st] = '\0';
     strcpy(resp->data, buffer);
     close(file_fd);
-    resp->status_code = 200;
-
+    SUCCESS_RESPONSE(resp);
 }
 
 /** Function to register static url (content of file will be returned on get request)
