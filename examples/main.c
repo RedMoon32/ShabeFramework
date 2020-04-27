@@ -1,4 +1,5 @@
-#include "ShabeFramework.h"
+#include <http_server.h>
+#include <dispatcher.h>
 
 // Each function accepts two arguments - request and response
 void hello_page(HttpRequest *req, HttpResponse *resp) {

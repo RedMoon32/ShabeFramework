@@ -13,6 +13,9 @@
 #define URL_NUMBERS 100
 
 #define CONTENT_TYPE "Content-Type"
+#define CONTENT_LENGTH "Content-length"
+#define TEXT_PLAIN "text/plain"
+
 #define NOT_FOUND_STRING "<html><h4> 404 not found </h4></html>"
 #define BAD_REQUEST_STRING "<html><h4> 400 bad request </h4></html>"
 #define SERVER_INTERNAL_STRING "<html><h4> 500 server internal error </h4></html>"

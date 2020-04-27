@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <api_funcs.h>
 #include <stdlib.h>
+#include <parser.h>
+
 
 /** Function registers new url - some 'ur' will be processes with 'processor' function
  *
@@ -79,4 +81,51 @@ api_url_func *get_request_processor(HttpRequest *req) {
     if (cur != NULL)
         return cur->processor;
     return NULL;
+}
+
+
+/** Function which processes http request:
+ * Parses http request -> perform action based on registered urls ->
+ * converts http response to string and returns it to client
+ * @param req - info about new req(client_fd, req_id, raw_request)
+ */
+void process_request(Request *req, p_array_list *reqs) {
+    HttpRequest *req_res = parse_str_to_req(req->request);
+    if (!get_request_header(req_res, CONTENT_TYPE)) {
+        map_set(&req_res->headers, CONTENT_TYPE, TEXT_PLAIN);
+    }
+    if (req_res == NULL)
+        goto out;
+    api_url_func *processor = get_request_processor(req_res);
+
+    HttpResponse *resp = malloc(sizeof(HttpResponse));
+
+    map_init(&resp->headers);
+    if (processor == NULL) {
+        NOT_FOUND_RESPONSE(resp);
+    } else {
+        processor(req_res, resp);
+    }
+    char result[MAX_REQUEST_LENGTH];
+    char clength[10];
+    sprintf(clength, "%lu", strlen(resp->data) + 2);
+    set_response_header(resp, CONTENT_LENGTH, clength);
+    parse_resp_to_str(resp, result);
+    strcat(result, "\0");
+    int st = write(req->client_fd, result, strlen(result) + 1);
+#ifdef TESTING
+    printf("Response %s:\n",result);
+#endif
+    printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
+
+    map_deinit(&resp->headers);
+    free(resp);
+    map_deinit(&req_res->headers);
+    free(req_res);
+
+    out:
+    st = close(req->client_fd);
+    array_list_remove_at(*reqs, req->id);
+    free(req);
+
 }

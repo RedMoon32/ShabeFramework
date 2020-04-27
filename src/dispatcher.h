@@ -1,4 +1,5 @@
 #include <http_structures.h>
+#include <alist.h>
 
 #ifndef DISPATCHER_H
 #define DISPATCHER_H
@@ -12,6 +13,7 @@ typedef struct api_url_struct {
     char path[URL_LENGTH];
 } api_url;
 
+void process_request(Request *req, p_array_list *reqs);
 
 int register_url(char *url, api_url_func *processor);
 
