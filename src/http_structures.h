@@ -56,6 +56,6 @@ extern void set_response_header(HttpResponse *resp, char *key, char *value);
 
 extern char *get_response_header(HttpResponse *resp, char *key);
 
-extern void make_response(int status_code, char message[DATA_LENGTH], HttpResponse* resp);
+extern void make_response(int status_code, char message[DATA_LENGTH], HttpResponse *resp);
 
 #endif

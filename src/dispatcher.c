@@ -6,24 +6,8 @@
 #include <http_structures.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <api_funcs.h>
 
-
-/**
- * Get api func from url patterns by key
- * @param url - key
- */
-api_url* get_api_func(char *url){
-
-    void** res = map_get(&url_patterns, url);
-
-    if (res != NULL){
-        api_url* api = *res;
-
-        return api;
-    }
-
-    return NULL;
-}
 
 /** Function registers new url - some 'ur' will be processes with 'processor' function
  *
@@ -34,13 +18,7 @@ int register_url(char *url, api_url_func *processor) {
     api_url *new_api = (api_url *) malloc(sizeof(api_url));
     strcpy(new_api->url, url);
     new_api->processor = processor;
-    void* cur_past = get_api_func(url);
-    if (cur_past != NULL) {
-        map_remove(&url_patterns, url);
-        free(cur_past);
-    }
-    map_set(&url_patterns, url, new_api);
-
+    api_funcs_add(new_api);
     return 0;
 }
 
@@ -56,7 +34,8 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
         return;
     }
 
-    api_url *api_func = get_api_func(req->url);
+    api_url *api_func = api_funcs_get(req->url);
+
     if (api_func == NULL) {
         NOT_FOUND_RESPONSE(resp);
         return;
@@ -83,7 +62,7 @@ void process_static_url(HttpRequest *req, HttpResponse *resp) {
  */
 int register_static_url(char *url, char *path) {
     register_url(url, process_static_url);
-    api_url *cur = get_api_func(url);
+    api_url *cur = api_funcs_get(url);
     if (cur == NULL)
         return -1;
     strcpy(cur->path, path);
@@ -96,8 +75,8 @@ int register_static_url(char *url, char *path) {
  * @return NULL if not found otherwise pointer to function
  */
 api_url_func *get_request_processor(HttpRequest *req) {
-    api_url *cur = get_api_func(req->url);
-    if (cur!=NULL)
+    api_url *cur = api_funcs_get(req->url);
+    if (cur != NULL)
         return cur->processor;
     return NULL;
 }

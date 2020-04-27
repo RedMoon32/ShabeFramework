@@ -47,7 +47,7 @@ char *get_response_header(HttpResponse *resp, char *key) {
  * @param message - data sector
  * @param resp - pointer to response
  */
-void make_response(int status_code, char message[DATA_LENGTH], HttpResponse* resp){
+void make_response(int status_code, char message[DATA_LENGTH], HttpResponse *resp) {
     resp->status_code = status_code;
     if (message != NULL)
         strcpy(resp->data, message);

@@ -54,16 +54,16 @@ char **_break_into_lines(char *req, HttpRequest *res_req) {
     char *start = req;
     mas[0] = start;
     for (int i = 1; i < strlen(req); i++) {
-        if (req[i-1] == CR && req[i] == LF){
+        if (req[i - 1] == CR && req[i] == LF) {
 
-            req[i-1] = (char) NULL;
+            req[i - 1] = (char) NULL;
             req[i] = (char) NULL;
 
-            if (i < strlen(req) - 2 && req[i+1] == CR && req[i+2] == LF) {
+            if (i < strlen(req) - 2 && req[i + 1] == CR && req[i + 2] == LF) {
                 d_symb = i;
                 break;
             }
-            nline ++;
+            nline++;
             if (nline == STR_COUNT)
                 break;
 

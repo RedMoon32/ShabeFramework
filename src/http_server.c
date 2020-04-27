@@ -10,6 +10,7 @@
 #include "http_structures.h"
 #include "http_server.h"
 #include "parser.h"
+#include "api_funcs.h"
 #include <alist.h>
 #include <pthread.h>
 
@@ -150,13 +151,9 @@ void *server_listen_() {
 
 void server_deinit() {
     listening = 0;
-
-    map_free_all(&url_patterns);
-
     array_list_free_all(reqs);
     delete_array_list(reqs);
-
-    map_deinit(&url_patterns);
+    api_funcs_deinit();
     close(master_fd);
 }
 
@@ -193,6 +190,6 @@ void server_listen() {
 void server_init() {
     SERVER_PORT = 8000;
     reqs = create_array_list(100);
-    map_init(&url_patterns);
+    api_funcs_init();
     master_fd = Socket();
 }
