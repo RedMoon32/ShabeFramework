@@ -4,6 +4,7 @@
 
 #include <api_funcs.h>
 #include <map.h>
+#include <stdlib.h>
 
 map_void_t url_patterns;
 

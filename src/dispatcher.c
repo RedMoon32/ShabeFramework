@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <api_funcs.h>
-
+#include <stdlib.h>
 
 /** Function registers new url - some 'ur' will be processes with 'processor' function
  *

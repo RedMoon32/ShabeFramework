@@ -3,7 +3,7 @@
 
 *"Reinventing wheels is the best thing in the world" (c) C programmer*  
   
-Shabe is a new http-server written fully in C
+Shabe is a new header-only http-server written fully in C
 
 ## Contribution
 Contribution to this repo (for your experience or just fun) is highly appreciated.  
@@ -17,11 +17,8 @@ Simple overview of architecture:
 
 ### Installation & Importing
 
-1. Just download this repo and put this folder into your project's root (or anywhere you want) 
-2. Then you can include it in your project:  
-`#include "Shabe/src/http_server.h`  
-`#include "Shabe/src/http_structures.h"`  
-`#include "Shabe/src/dispatcher.h`
+1. Just copy ShabeFramework.h from src folder to your project
+2. Link PThread library in your building system
 
 ### Usage
 
@@ -37,31 +34,27 @@ Simple overview of architecture:
 
 **Simple example:** 
 ```c        
-// includes are just for my example
-#include "Shabe/src/http_server.h"
-#include "Shabe/src/dispatcher.h"
-#include "Shabe/src/http_structures.h"
+#include "ShabeFramework.h"
 
 // Each function accepts two arguments - request and response
 void hello_page(HttpRequest *req, HttpResponse *resp) {
-   if (req->method == GET) {
-       resp->status_code = 200;
-       strcpy(resp->data, "<html><h1>Hello from server!</h1></html");
-   } else if (req->method == POST){
-       resp->status_code = 200;
-       printf("New data %s has come of type %s \n", req->data, get_request_header(req, CONTENT_TYPE));
-   }
+    if (req->method == GET) {
+        make_response(200, "<html><h1>Hello from server!</h1></html", resp);
+    } else if (req->method == POST){
+        printf("New data %s has come of type %s \n", req->data, get_request_header(req, CONTENT_TYPE));
+        BAD_RESPONSE(resp);
+    }
 }
 
 int main() {
-   // initialize all memory for server
-   server_init();
-   // register our function in dispatcher
-   register_url("/home/", hello_page);
-   // or register html page from some file
-   register_static_url("/login/", "temp2.html");
-   // start to listen on 8000 port
-   server_listen();
+    // initialize all memory for server
+    server_init();
+    // register our function in dispatcher
+    register_url("/home/", hello_page);
+    // or register html page from some file
+    register_static_url("/login/", "./examples/temp2.html");
+    // start to listen on 8000 port
+    server_listen();
 }
    ```
 *More functions can be found in header files*

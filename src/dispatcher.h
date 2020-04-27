@@ -1,4 +1,3 @@
-#include <alist.h>
 #include <http_structures.h>
 
 #ifndef DISPATCHER_H
