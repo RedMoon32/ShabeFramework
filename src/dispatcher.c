@@ -9,7 +9,8 @@
 #include <api_funcs.h>
 #include <stdlib.h>
 #include <parser.h>
-
+#include <dirent.h>
+#include <str_funcs.h>
 
 /** Function registers new url - some 'ur' will be processes with 'processor' function
  *
@@ -92,10 +93,12 @@ api_url_func *get_request_processor(HttpRequest *req) {
 void process_request(Request *req, p_array_list *reqs) {
     HttpRequest *req_res = parse_str_to_req(req->request);
     if (!get_request_header(req_res, CONTENT_TYPE)) {
-        map_set(&req_res->headers, CONTENT_TYPE, TEXT_PLAIN);
+        set_request_header(req_res, CONTENT_TYPE, TEXT_PLAIN);
     }
+
     if (req_res == NULL)
         goto out;
+
     api_url_func *processor = get_request_processor(req_res);
 
     HttpResponse *resp = malloc(sizeof(HttpResponse));
@@ -128,4 +131,36 @@ void process_request(Request *req, p_array_list *reqs) {
     array_list_remove_at(*reqs, req->id);
     free(req);
 
+}
+
+/**
+ * Map all static files from folder to urls
+ *
+ * @param path - path to static folder
+ * @return 0/-1 on success/error
+ */
+int set_static_folder(char *path){
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(path);
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+
+            if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+                continue;
+
+            char url[PATH_MAX];
+            char file_path[PATH_MAX];
+            char file_corr_path[PATH_MAX];
+
+            concat_str(STATIC_PREFIX, dir->d_name, url);
+            realpath(concat_str(path, dir->d_name, file_path), file_corr_path);
+
+            register_static_url(url, file_corr_path);
+        }
+        closedir(d);
+    } else
+        return -1;
+
+    return 0;
 }

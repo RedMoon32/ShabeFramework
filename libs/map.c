@@ -10,11 +10,11 @@
 #include <map.h>
 
 struct map_node_t {
-  unsigned hash;
-  void *value;
-  map_node_t *next;
-  /* char key[]; */
-  /* char value[]; */
+    unsigned hash;
+    void *value;
+    map_node_t *next;
+    /* char key[]; */
+    /* char value[]; */
 };
 
 
@@ -30,12 +30,12 @@ static unsigned map_hash(const char *str) {
 static map_node_t *map_newnode(const char *key, void *value, int vsize) {
   map_node_t *node;
   int ksize = strlen(key) + 1;
-  int voffset = ksize + ((sizeof(void*) - ksize) % sizeof(void*));
+  int voffset = ksize + ((sizeof(void *) - ksize) % sizeof(void *));
   node = malloc(sizeof(*node) + voffset + vsize);
   if (!node) return NULL;
   memcpy(node + 1, key, ksize);
   node->hash = map_hash(key);
-  node->value = ((char*) (node + 1)) + voffset;
+  node->value = ((char *) (node + 1)) + voffset;
   memcpy(node->value, value, vsize);
   return node;
 }
@@ -58,7 +58,7 @@ static void map_addnode(map_base_t *m, map_node_t *node) {
 static int map_resize(map_base_t *m, int nbuckets) {
   map_node_t *nodes, *node, *next;
   map_node_t **buckets;
-  int i; 
+  int i;
   /* Chain all nodes together */
   nodes = NULL;
   i = m->nbuckets;
@@ -98,7 +98,7 @@ static map_node_t **map_getref(map_base_t *m, const char *key) {
   if (m->nbuckets > 0) {
     next = &m->buckets[map_bucketidx(m, hash)];
     while (*next) {
-      if ((*next)->hash == hash && !strcmp((char*) (*next + 1), key)) {
+      if ((*next)->hash == hash && !strcmp((char *) (*next + 1), key)) {
         return next;
       }
       next = &(*next)->next;
@@ -189,16 +189,22 @@ const char *map_next_(map_base_t *m, map_iter_t *iter) {
       iter->node = m->buckets[iter->bucketidx];
     } while (iter->node == NULL);
   }
-  return (char*) (iter->node + 1);
+  return (char *) (iter->node + 1);
 }
 
-void map_free_all_(map_base_t *m){
-    const char *key;
-    map_iter_t iter = map_iter(m);
+void map_free_all_(map_base_t *m) {
+  const char *key;
+  map_iter_t iter = map_iter(m);
 
-    while ((key = map_next_(m, &iter))) {
-        void **res = map_get_(m, key);
-        if (res != NULL)
-            free(*res);
-    }
+  while ((key = map_next_(m, &iter))) {
+    void **res = map_get_(m, key);
+    if (res != NULL)
+      free(*res);
+  }
+}
+
+void *  map_get_val_(void **data_pointer) {
+  if (data_pointer == NULL)
+    return NULL;
+  return *data_pointer;
 }

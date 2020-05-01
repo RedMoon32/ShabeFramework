@@ -8,6 +8,7 @@
 
 map_void_t url_patterns;
 
+
 /**
  * Init api container
  */
@@ -38,14 +39,7 @@ void api_funcs_remove_and_free(api_url *api_to_remove) {
  * Get api processor from the url
  */
 api_url *api_funcs_get(char *url) {
-    void **res = map_get(&url_patterns, url);
-
-    if (res != NULL) {
-        api_url *api = *res;
-        return api;
-    }
-
-    return NULL;
+    return (api_url*) map_get_val(&url_patterns, url);
 }
 
 /**

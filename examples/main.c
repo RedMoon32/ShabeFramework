@@ -14,10 +14,12 @@ void hello_page(HttpRequest *req, HttpResponse *resp) {
 int main() {
     // initialize all memory for server
     server_init();
+    // set static folder
+    set_static_folder("./examples/");
     // register our function in dispatcher
-    register_url("/home/", hello_page);
+    register_url("/home", hello_page);
     // or register html page from some file
-    register_static_url("/login/", "./examples/temp2.html");
+    register_static_url("/login", "./examples/temp2.html");
     // start to listen on 8000 port
     server_listen();
 }
