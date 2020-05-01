@@ -27,7 +27,7 @@ typedef struct {
 
 
 #define map_t(T)\
-  struct { map_base_t base; T *ref; T tmp; }
+  struct { map_base_t base; T *ref; T tmp;}
 
 
 #define map_init(m)\
@@ -39,8 +39,7 @@ typedef struct {
 
 
 #define map_get(m, key)\
-  ( (m)->ref = map_get_(&(m)->base, key) )
-
+  ( (m)->ref = map_get_(&(m)->base, key))
 
 #define map_set(m, key, value)\
   ( (m)->tmp = (value),\
@@ -56,8 +55,12 @@ typedef struct {
 #define map_next(m, iter)\
   map_next_(&(m)->base, iter)
 
+#define map_get_val(m, key)\
+  (map_get_val_((void **)map_get(m, key)))
+
 #define map_free_all(m)\
   map_free_all_(&(m)->base)
+
 
 void map_deinit_(map_base_t *m);
 void *map_get_(map_base_t *m, const char *key);
@@ -66,6 +69,7 @@ void map_remove_(map_base_t *m, const char *key);
 map_iter_t map_iter_(void);
 const char *map_next_(map_base_t *m, map_iter_t *iter);
 void map_free_all_(map_base_t *m);
+void *map_get_val_(void **data_pointer);
 
 typedef map_t(void*) map_void_t;
 typedef map_t(char*) map_str_t;

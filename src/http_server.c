@@ -10,12 +10,9 @@
 #include "http_structures.h"
 #include "http_server.h"
 #include "parser.h"
+#include "api_funcs.h"
 #include <alist.h>
 #include <pthread.h>
-
-
-#define NOT_FOUND_STRING "<html><h4> 404 not found </h4></html>"
-
 
 p_array_list reqs;
 int master_fd;
@@ -72,54 +69,6 @@ int append_to_requests(char *buffer, int new_socket) {
     return ind;
 }
 
-/** Function which processes http request:
- * Parses http request -> perform action based on registered urls ->
- * converts http response to string and returns it to client
- * @param req - info about new req(client_fd, req_id, raw_request)
- */
-void process_request(Request *req) {
-    HttpRequest *req_res = parse_str_to_req(req->request);
-    if (!get_request_header(req_res, CONTENT_TYPE)) {
-        map_set(&req_res->headers, CONTENT_TYPE, "text/plain");
-    }
-    if (req_res == NULL)
-        goto out;
-    api_url_func *processor = get_request_processor(req_res);
-
-    HttpResponse *resp = malloc(sizeof(HttpResponse));
-
-    map_init(&resp->headers);
-    if (processor == NULL) {
-        resp->status_code = 404;
-        strcpy(resp->data, NOT_FOUND_STRING);
-    } else {
-        processor(req_res, resp);
-    }
-    char result[MAX_REQUEST_LENGTH];
-    char clength[10];
-    sprintf(clength, "%d", strlen(resp->data) + 2);
-    map_set(&resp->headers, "Content-length", clength);
-    parse_resp_to_str(resp, result);
-    strcat(result, "\0");
-    int st = write(req->client_fd, result, strlen(result) + 1);
-#ifdef TESTING
-    printf("Response %s:\n",result);
-#endif
-    printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
-
-    map_deinit(&resp->headers);
-    free(resp);
-    map_deinit(&req_res->headers);
-    free(req_res);
-
-    out:
-    st = close(req->client_fd);
-    array_list_remove_at(reqs, req->id);
-    free(req);
-
-}
-
-
 /**
  * Main listening part
  * @param server_fd - master socket fd (with some port binded to this socket)
@@ -148,19 +97,15 @@ void *server_listen_() {
         printf("%s - new request\n", buffer);
 #endif
         int last_req = append_to_requests(buffer, new_socket);
-        process_request(array_list_get(reqs, last_req));
+        process_request(array_list_get(reqs, last_req), reqs);
     }
 }
 
 void server_deinit() {
     listening = 0;
-
-    map_free_all(&url_patterns);
-
     array_list_free_all(reqs);
     delete_array_list(reqs);
-
-    map_deinit(&url_patterns);
+    api_funcs_deinit();
     close(master_fd);
 }
 
@@ -197,6 +142,6 @@ void server_listen() {
 void server_init() {
     SERVER_PORT = 8000;
     reqs = create_array_list(100);
-    map_init(&url_patterns);
+    api_funcs_init();
     master_fd = Socket();
 }
