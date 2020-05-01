@@ -53,13 +53,14 @@ char **_break_into_lines(char *req, HttpRequest *res_req) {
     int d_symb = -1; // index represent start of DATA sector (splitted by CRLF CRLF)
     char *start = req;
     mas[0] = start;
-    for (int i = 1; i < strlen(req); i++) {
+    size_t str_size = strlen(req);
+    for (int i = 1; i < str_size; i++) {
         if (req[i - 1] == CR && req[i] == LF) {
 
             req[i - 1] = (char) NULL;
             req[i] = (char) NULL;
 
-            if (i < strlen(req) - 2 && req[i + 1] == CR && req[i + 2] == LF) {
+            if (i < str_size - 2 && req[i + 1] == CR && req[i + 2] == LF) {
                 d_symb = i;
                 break;
             }
@@ -72,7 +73,7 @@ char **_break_into_lines(char *req, HttpRequest *res_req) {
     }
     if (d_symb != -1) {
         req[d_symb - 1] = '\0';
-        req = req + d_symb + 1;
+        req = req + d_symb + 3;
         strcpy(res_req->data, req);
     }
     return mas;
@@ -178,6 +179,6 @@ void parse_resp_to_str(HttpResponse *resp, char *dest) {
         value = *map_get(&resp->headers, header);
         snprintf(dest + strlen(dest), DATA_LENGTH, "%s: %s"CRLF, header, value);
     }
-    strcat(dest, CRLF CRLF);
+    strcat(dest, CRLF);
     strcat(dest, resp->data);
 }

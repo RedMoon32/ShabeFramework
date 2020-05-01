@@ -97,7 +97,7 @@ void *server_listen_() {
         printf("%s - new request\n", buffer);
 #endif
         int last_req = append_to_requests(buffer, new_socket);
-        process_request(array_list_get(reqs, last_req), &reqs);
+        process_request(array_list_get(reqs, last_req), reqs);
     }
 }
 

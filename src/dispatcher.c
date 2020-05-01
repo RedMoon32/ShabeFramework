@@ -90,7 +90,7 @@ api_url_func *get_request_processor(HttpRequest *req) {
  * converts http response to string and returns it to client
  * @param req - info about new req(client_fd, req_id, raw_request)
  */
-void process_request(Request *req, p_array_list *reqs) {
+void process_request(Request *req, p_array_list reqs) {
     HttpRequest *req_res = parse_str_to_req(req->request);
     if (!get_request_header(req_res, CONTENT_TYPE)) {
         set_request_header(req_res, CONTENT_TYPE, TEXT_PLAIN);
@@ -116,9 +116,6 @@ void process_request(Request *req, p_array_list *reqs) {
     parse_resp_to_str(resp, result);
     strcat(result, "\0");
     int st = write(req->client_fd, result, strlen(result) + 1);
-#ifdef TESTING
-    printf("Response %s:\n",result);
-#endif
     printf("<- %s %s %d\n", http_methods[req_res->method], req_res->url, resp->status_code);
 
     map_deinit(&resp->headers);
@@ -127,8 +124,10 @@ void process_request(Request *req, p_array_list *reqs) {
     free(req_res);
 
     out:
-    st = close(req->client_fd);
-    array_list_remove_at(*reqs, req->id);
+
+    if (!getenv("TESTING"))
+        st = close(req->client_fd);
+    array_list_remove_at(reqs, req->id);
     free(req);
 
 }

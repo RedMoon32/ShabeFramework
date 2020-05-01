@@ -10,11 +10,11 @@ typedef void (api_url_func)(HttpRequest *, HttpResponse *);
 
 typedef struct api_url_struct {
     char url[URL_LENGTH];
-    void *processor;
+    api_url_func* processor;
     char path[URL_LENGTH];
 } api_url;
 
-void process_request(Request *req, p_array_list *reqs);
+void process_request(Request *req, p_array_list reqs);
 
 int register_url(char *url, api_url_func *processor);
 
