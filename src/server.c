@@ -81,6 +81,48 @@ void server_listen(int server_fd,struct sockaddr *address){
       }
 }
 
+void server_listen_multi(int server_fd,struct sockaddr *address){
+     int addrlen = sizeof(address);
+     int new_socket;
+     long valread;
+     char *hello = "Hello from server";
+    char buffer[30000] = {0};
+     Request* reqs[MAX_REQUESTS];
+     while(1)
+    {
+        new_socket = accept(server_fd, NULL, NULL);
+        if(new_socket < 0)
+        {
+            perror("accept error");
+            exit(3);
+        }
+
+        switch(fork())
+        {
+        case -1:
+            perror("fork error");
+            break;
+
+        case 0:
+            close(server_fd);
+            while(1)
+            {
+                valread = recv(new_socket, buffer, 1024, 0);
+                if(valread <= 0) break;
+                send(new_socket, buffer, valread, 0);
+            }
+
+            close(new_socket);
+            _exit(0);
+
+        default:
+            close(new_socket);
+        }
+    }
+
+    close(server_fd);
+}
+
 #ifndef TESTING
 
 int main(int argc, char const *argv[])
