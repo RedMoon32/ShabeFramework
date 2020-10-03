@@ -17,7 +17,7 @@ Simple overview of architecture:
 
 ### Installation & Importing
 
-1. Just copy ShabeFramework.h from src folder to your project
+1. Just copy all the project to some directory in your project and do as in examples folder
 2. Link PThread library in your building system
 
 ### Usage
